@@ -172,7 +172,7 @@
         }
 
         /* ==========================================================
-           로그인 모달 (Login Modal) 스타일
+           공통 모달 (Modal Base) 스타일
         ============================================================ */
         .modal-overlay {
             position: fixed;
@@ -190,7 +190,6 @@
             z-index: 1000;
         }
 
-        /* 모달이 활성화되었을 때 클래스 */
         .modal-overlay.active {
             opacity: 1;
             pointer-events: auto;
@@ -235,7 +234,7 @@
             color: #4A90E2;
         }
 
-        /* 로그인 폼 입력창 */
+        /* 폼 입력창 스타일 */
         .input-group {
             margin-bottom: 15px;
         }
@@ -262,7 +261,7 @@
             border-color: #4A90E2;
         }
 
-        /* 로그인 버튼 */
+        /* 제출 버튼 */
         .submit-btn {
             width: 100%;
             background-color: #4A90E2;
@@ -294,7 +293,11 @@
             margin: 0 5px;
         }
 
-        /* 모바일 대응 버튼 위치 조정 */
+        .modal-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 모바일 대응 */
         @media (max-width: 600px) {
             .login-btn {
                 position: static;
@@ -310,7 +313,6 @@
     <header>
         <h1>🎓 캠퍼스 중고 마트</h1>
         <p>우리 학교 학생들을 위한 안전한 중고거래 공간</p>
-        <!-- 로그인 버튼 추가 -->
         <button class="login-btn" id="openLogin">로그인</button>
     </header>
 
@@ -325,7 +327,6 @@
 
         <!-- 중고 물품 리스트 영역 -->
         <div class="product-grid">
-            <!-- 전자기기 아이템 -->
             <div class="product-card" data-category="전자기기">
                 <div class="product-image">💻 전자기기 이미지</div>
                 <div class="product-info">
@@ -336,7 +337,6 @@
                 </div>
             </div>
 
-            <!-- 전공책 아이템 -->
             <div class="product-card" data-category="전공책">
                 <div class="product-image">📚 전공책 이미지</div>
                 <div class="product-info">
@@ -347,7 +347,6 @@
                 </div>
             </div>
 
-            <!-- 필기구 아이템 -->
             <div class="product-card" data-category="필기구">
                 <div class="product-image">✏️ 필기구 이미지</div>
                 <div class="product-info">
@@ -361,8 +360,8 @@
     </div>
 
     <!-- ==========================================================
-       로그인 창 모달 HTML 구조 추가
-    ============================================================ */ -->
+       1. 로그인 창 모달
+    ============================================================ -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal-box">
             <button class="close-btn" id="closeLogin">&times;</button>
@@ -381,13 +380,47 @@
             </form>
 
             <div class="modal-footer">
-                <a href="#">아이디 찾기</a> | <a href="#">비밀번호 찾기</a> | <a href="#">회원가입</a>
+                <a href="#">아이디 찾기</a> | <a href="#">비밀번호 찾기</a> | <a href="#" id="toRegister">회원가입</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================
+       2. 회원가입 창 모달 (추가됨)
+    ============================================================ -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal-box">
+            <button class="close-btn" id="closeRegister">&times;</button>
+            <div class="modal-title">학생 회원가입</div>
+            
+            <form id="registerForm">
+                <div class="input-group">
+                    <label for="regName">이름</label>
+                    <input type="text" id="regName" placeholder="홍길동" required>
+                </div>
+                <div class="input-group">
+                    <label for="regStudentId">학번</label>
+                    <input type="text" id="regStudentId" placeholder="202612345" required>
+                </div>
+                <div class="input-group">
+                    <label for="regEmail">학교 이메일</label>
+                    <input type="email" id="regEmail" placeholder="id@university.ac.kr" required>
+                </div>
+                <div class="input-group">
+                    <label for="regPw">비밀번호</label>
+                    <input type="password" id="regPw" placeholder="영문, 숫자 포함 8자 이상" required>
+                </div>
+                <button type="submit" class="submit-btn">가입 완료하기</button>
+            </form>
+
+            <div class="modal-footer">
+                이미 계정이 있으신가요? <a href="#" id="toLogin">로그인하기</a>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 카테고리 필터링 기능
+        // --- [기존] 카테고리 필터링 기능 ---
         const tabs = document.querySelectorAll('.tab');
         const cards = document.querySelectorAll('.product-card');
 
@@ -395,9 +428,7 @@
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-
                 const category = tab.textContent;
-
                 cards.forEach(card => {
                     if (category === '전체보기' || card.getAttribute('data-category') === category) {
                         card.style.display = 'block';
@@ -408,35 +439,57 @@
             });
         });
 
-        // 2. 로그인 모달 제어 기능 추가
+        // --- [수정 및 추가] 모달 제어 스크립트 ---
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+
         const openLoginBtn = document.getElementById('openLogin');
         const closeLoginBtn = document.getElementById('closeLogin');
-        const loginModal = document.getElementById('loginModal');
-        const loginForm = document.getElementById('loginForm');
+        const closeRegisterBtn = document.getElementById('closeRegister');
 
-        // 로그인 버튼 누르면 켜기
-        openLoginBtn.addEventListener('click', () => {
-            loginModal.classList.add('active');
+        // 링크 엘리먼트 (로그인 <-> 회원가입 전환용)
+        const toRegisterLink = document.getElementById('toRegister');
+        const toLoginLink = document.getElementById('toLogin');
+
+        // 1. 열기 / 닫기 기본 기능
+        openLoginBtn.addEventListener('click', () => loginModal.classList.add('active'));
+        closeLoginBtn.addEventListener('click', () => loginModal.classList.remove('active'));
+        closeRegisterBtn.addEventListener('click', () => registerModal.classList.remove('active'));
+
+        // 바깥 어두운 배경 누르면 닫기
+        window.addEventListener('click', (e) => {
+            if (e.target === loginModal) loginModal.classList.remove('active');
+            if (e.target === registerModal) registerModal.classList.remove('active');
         });
 
-        // X 버튼 누르면 끄기
-        closeLoginBtn.addEventListener('click', () => {
+        // 2. 로그인창 -> 회원가입창 전환 (핵심 기능)
+        toRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault(); // 링크 기본 이동 방지
+            loginModal.classList.remove('active');   // 로그인 창 닫기
+            registerModal.classList.add('active');   // 회원가입 창 열기
+        });
+
+        // 3. 회원가입창 -> 로그인창 전환
+        toLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerModal.classList.remove('active'); // 회원가입 창 닫기
+            loginModal.classList.add('active');     // 로그인 창 열기
+        });
+
+        // 4. 폼 제출 이벤트 처리 (테스트용)
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const idValue = document.getElementById('userId').value;
+            alert(`${idValue}님 환영합니다!`);
             loginModal.classList.remove('active');
         });
 
-        // 모달 바깥 어두운 배경 누르면 끄기
-        loginModal.addEventListener('click', (e) => {
-            if (e.target === loginModal) {
-                loginModal.classList.remove('active');
-            }
-        });
-
-        // 로그인 폼 제출 시 이벤트 (테스트용 알림)
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // 페이지 새로고침 방지
-            const idValue = document.getElementById('userId').value;
-            alert(`${idValue}님 환영합니다! (로그인 구현 성공)`);
-            loginModal.classList.remove('active'); // 로그인 후 창 닫기
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameValue = document.getElementById('regName').value;
+            alert(`${nameValue}님, 학교 인증 회원가입이 완료되었습니다!`);
+            registerModal.classList.remove('active');
+            loginModal.classList.add('active'); // 가입완료 후 로그인창으로 이동시켜주면 친절한 UI가 됩니다.
         });
     </script>
 </body>
